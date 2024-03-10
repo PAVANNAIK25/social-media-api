@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-
 export const userSchema = mongoose.Schema({
     name: {
         type: String,
@@ -13,10 +12,11 @@ export const userSchema = mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: true
     },
     gender: {
         type: String,
+        default:'unknown',
         required: true,
     },
     posts: [{

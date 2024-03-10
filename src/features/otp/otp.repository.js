@@ -1,57 +1,51 @@
-import nodemailer from 'nodemailer';
-import { otpModel } from './otp.schema.js';
+import { OtpModel } from './otp.schema.js';
 import { UserModel } from '../users/authentication/user.repository.js';
 import ApplicationError from '../../error handle/applicationError.js';
-
-const transpoter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD
-    }
-});
+import { generateOtp, hashOtp } from '../utils/secureOTP.js';
+import { sendOtp } from '../utils/sendOtp.js';
+import { hashedPass } from '../utils/passwordHash.js';
 
 export default class OtpRepository {
-    async sendOtp(email) {
-        const otp = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-        const otpExpire = new Date();
-        otpExpire.setMinutes(otpExpire.getMinutes() + 10); // this will set the time otpExpire for 10 mins ahead
 
+// this methods sends OTP to user via email
+    async sendOtp(email) {
+        const otp = generateOtp(); // generates 6 digit otp
+        const otpExpire = new Date();
+        otpExpire.setMinutes(otpExpire.getMinutes() + 10); //this will set the otpExpires in 10 mins 
         try {
-            const newOtp = new otpModel({
+            const hashedOtp = await hashOtp(otp); //hashes OTP
+            const newOtp = new OtpModel({
                 email: email,
-                otp: otp,
+                otp: hashedOtp,
                 otpExpire: otpExpire
             });
             await newOtp.save();
-
-            const result = await transpoter.sendMail({
-                from: "pavantest25@gmail.com",
-                to: email,
-                subject: "OTP for Postaway",
-                html: '<p>Please use below OTP to reset your password <br></br><h2 style="margin-left:60px"><b>' + otp + '</b></h2><br></br></p> <div>This OTP is only valid for 10 minutes</div>'
-            });
-
+            const result = await sendOtp(email, otp);
+            if(result){
+                return {
+                    message: `OTP sent to ${email}`
+                }
+            }
             return {
-                message: `OTP sent to ${email}`
+                message: 'Something went wrong, please try again.'
             }
 
         } catch (err) {
             console.log(err);
+            throw new ApplicationError("Something went wrong with OTP", 500);
         }
     }
-
+    // this method verifies the submited OTP
     async verifyOtp(email, otp) {
-
         try {
-            const result = await otpModel.findOne({ email: email, otp: otp });
+            const hashedOtp = await hashOtp(otp); //return a hashed OTP/ OTP token
+            const result = await OtpModel.findOne({ email: email, otp: hashedOtp });
             if(!result){
                 return {
                     success: false,
                     message: "Invalid OTP!"
                 }
             }
-
             if (result.otpExpire < new Date()) {
                 return {
                     success: false,
@@ -60,27 +54,29 @@ export default class OtpRepository {
             } else {
                 return {
                     success: true,
-                    message: "OTP verified!"
+                    message: "OTP verified!",
+                    token: hashedOtp
                 }
             }
-
         } catch (err) {
             console.log(err);
         }
     }
 
-    async resetPassword(email, newPassword){
+    async resetPassword(token, newPassword){
         try{
-            const user = await UserModel.findOne({email: email});
+            const result = await OtpModel.findOne({otp: token});
+            const user = await UserModel.findOne({email: result.email})
             if(!user){
                 return {
                     success: false,
-                    message: "User not found"
+                    message: "User not found!"
                 }
             }
-
-            user.password=newPassword;
+            const hashedPassword = await hashedPass(newPassword);
+            user.password = hashedPassword;            
             await user.save();
+            await OtpModel.deleteOne({otp: token});
             return{
                 success: true,
                 message: "Password updated successfully"

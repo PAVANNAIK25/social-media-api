@@ -1,5 +1,4 @@
 import OtpRepository from "./otp.repository.js";
-import bcrypt from 'bcrypt';
 
 export default class OtpController {
     constructor() {
@@ -7,32 +6,29 @@ export default class OtpController {
     }
 
     async sendOtp(req, res, next) {
-        const email = req.body.email;
-        if (!email) {
-            return res.status(400).send("Please send valid email");
-        }
-
-        const result = await this.otpRepository.sendOtp(email);
-
-        res.status(200).send(result.message);
-
-    }
-
-    async verifyOtp(req, res, next) {
-        const email = req.body.email;
-        const otp = req.body.otp;
         try {
-
+            const email = req.body.email;
             if (!email) {
                 return res.status(400).send("Please send valid email");
             }
+            const result = await this.otpRepository.sendOtp(email);
+            res.status(200).send(result.message);
+        } catch (error) {
+            next(error);
+        }
+    }
 
+    async verifyOtp(req, res, next) {
+        const {email, otp} = req.body;
+        try {
+            if (!email) {
+                return res.status(400).send("Please send valid email");
+            }
             const result = await this.otpRepository.verifyOtp(email, otp);
             if (!result.success) {
                 return res.status(400).send(result.message);
             }
-
-            res.status(200).send(result.message);
+            res.status(200).send(result);
         } catch (err) {
             console.log(err);
             next(err);
@@ -40,15 +36,16 @@ export default class OtpController {
     }
 
     async resetPassword(req, res, next) {
-        const { email, password } = req.body;
+        const {newPassword, confirmPassword} = req.body;
+        const token = req.query.token;
         try {
-
-            const hashedPassword = await bcrypt.hash(password, 12);
-            const result = await this.otpRepository.resetPassword(email, hashedPassword);
+            if(newPassword!=confirmPassword){
+                return res.status(400).send({message: "new and confirm password does not match"});
+            }
+            const result = await this.otpRepository.resetPassword(token, newPassword);
             if (!result.success) {
                 return res.status(400).send(result.message);
             }
-
             res.status(200).send(result.message);
         } catch (err) {
             console.log(err);

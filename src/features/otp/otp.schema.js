@@ -6,7 +6,7 @@ const otpSchema = mongoose.Schema({
         required: true
     },
     otp:{
-        type: Number,
+        type: String,
         required: true
     },
     otpExpire:{
@@ -15,4 +15,4 @@ const otpSchema = mongoose.Schema({
     }
 })
 
-export const otpModel = mongoose.model('OTP', otpSchema);
+export const OtpModel = mongoose.model('OTP', otpSchema);

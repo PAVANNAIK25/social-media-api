@@ -1,7 +1,7 @@
 import app from "./index.js";
 import { connectToDB } from "./src/config/mongoose.config.js";
 
-const port = process.env.PORT;
+const port = process.env.PORT || 8080;
 
 app.listen(port, async ()=>{
     await connectToDB();

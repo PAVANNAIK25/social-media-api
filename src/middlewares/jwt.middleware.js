@@ -6,9 +6,7 @@ export const auth = async (req, res, next)=>{
     if(!req.cookies.jwt){
         return res.status(400).send("Unauthorized");
     }
-    
     const token = req.cookies.jwt;
-    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.userId;
     const user = await UserModel.findOne({_id: decoded.userId});

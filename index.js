@@ -17,6 +17,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
+// routers different routes
 app.use("/api/users", userRouter);
 app.use("/api/posts", auth, postRouter);
 app.use("/api/comments", auth, commentRouter);
