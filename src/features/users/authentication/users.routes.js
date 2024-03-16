@@ -1,7 +1,8 @@
-import express from 'express';
+import express, { json } from 'express';
 import UserController from './users.controller.js';
 import {auth} from '../../../middlewares/jwt.middleware.js'
 import ProfileController from '../profile/profile.controller.js';
+
 
 const userRouter = express.Router();
 

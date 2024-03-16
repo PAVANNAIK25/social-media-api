@@ -1,0 +1,295 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Social Media API",
+        "description": "Welcome to the documentation for our Social Media API built using Node.js and Express.js! This API provides a set of endpoints to power your social networking application, allowing users to create profiles, post content, interact with others, and more.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "jwt"
+            }
+        },
+        "schemas": {
+            "user": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "gender": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/users/signup": {
+            "post": {
+                "tags": [
+                    "Users Authentication"
+                ],
+                "summary": "User can sign up",
+                "description": "Users register by submitting details to the registration route, server validates, stores data, and returns a success message.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/user"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/signin": {
+            "post": {
+                "tags": [
+                    "Users Authentication"
+                ],
+                "summary": "User can sign in",
+                "description": "User submits credentials to login, server verifies, generates JWT token, client stores, and uses for accessing protected routes.",
+                "security": [
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login sucessful!",
+                        "headers": {
+                            "Set-cookie": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "jwt=Jkt546ysflasbhgsdhfawiox"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/users/logout": {
+            "get": {
+                "tags": [
+                    "Users Authentication"
+                ],
+                "summary": "Logout Link",
+                "description": "User logout using this API",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful"
+                    }
+                }
+            }
+        },
+        "/users/logout-all-devices": {
+            "get": {
+                "tags": [
+                    "Users Authentication"
+                ],
+                "summary": "Logs out the user from all devices",
+                "description": "Logs out the user from all devices",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful"
+                    }
+                }
+            }
+        },
+        "/users/get-all-details": {
+            "get": {
+                "tags": [
+                    "Users Profile"
+                ],
+                "summary": "Get all users",
+                "description": "Retrieve the list of all users",
+                "responses": {
+                    "200": {
+                        "description": "List of all users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/user"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/users/get-details/{userId}": {
+            "get": {
+                "tags": [
+                    "Users Profile"
+                ],
+                "summary": "Get user Details",
+                "description": "Retrieve details of a user",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "userId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Retrieve details of a user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/user"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/users/update-details/{userId}": {
+            "put": {
+                "tags": [
+                    "Users Profile"
+                ],
+                "summary": "Update user Details",
+                "description": "Update user details",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "userId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody":{
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/user"
+                            }
+                        }
+                    } 
+                    
+                },
+                "responses": {
+                    "200": {
+                        "description": "Retrieve details of a user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/user"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/posts/all":{
+            "get":{
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Retrieve all posts",
+                "description": "Retrieve the all posts",
+                "responses": {
+                    "200": {
+                        "description": "All posts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/user"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Unauthorized"
+                    }
+                }                                
+            }
+        }        
+
+    }
+}

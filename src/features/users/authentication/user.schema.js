@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-export const userSchema = mongoose.Schema({
+const userSchema = mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -8,7 +10,13 @@ export const userSchema = mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        validate: {
+            validator: function (email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            },
+            message: props => `${props.value} is not a valid email`
+        }
     },
     password: {
         type: String,
@@ -16,8 +24,7 @@ export const userSchema = mongoose.Schema({
     },
     gender: {
         type: String,
-        default:'unknown',
-        required: true,
+        default: 'unknown'
     },
     posts: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -40,3 +47,24 @@ export const userSchema = mongoose.Schema({
     ]
 
 })
+
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
+    }
+    this.password = await bcrypt.hash(this.password, 12);
+    next();
+
+});
+
+userSchema.methods.verifyPassword = async function (password){
+    return await bcrypt.compare(password, this.password);
+}
+
+userSchema.methods.generateAccessToken = async function(){
+    const token = await jwt.sign({userId: this._id}, process.env.JWT_SECRET, {expiresIn:process.env.ACCESS_TOKEN_EXPIRY});
+    this.sessions.push(token);
+    return token;
+}
+
+export const UserModel = mongoose.model('User', userSchema);

@@ -1,9 +1,8 @@
 import { OtpModel } from './otp.schema.js';
-import { UserModel } from '../users/authentication/user.repository.js';
-import ApplicationError from '../../error handle/applicationError.js';
-import { generateOtp, hashOtp } from '../utils/secureOTP.js';
-import { sendOtp } from '../utils/sendOtp.js';
-import { hashedPass } from '../utils/passwordHash.js';
+import { UserModel } from '../users/authentication/user.schema.js';
+import ApplicationError from '../../utils/error handle/applicationError.js';
+import { generateOtp, hashOtp } from '../../utils/secureOTP.js';
+import { sendOtp } from '../../utils/sendOtp.js';
 
 export default class OtpRepository {
 
@@ -73,8 +72,7 @@ export default class OtpRepository {
                     message: "User not found!"
                 }
             }
-            const hashedPassword = await hashedPass(newPassword);
-            user.password = hashedPassword;            
+            user.password = newPassword;            
             await user.save();
             await OtpModel.deleteOne({otp: token});
             return{

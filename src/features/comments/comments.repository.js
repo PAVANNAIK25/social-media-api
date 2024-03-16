@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import { commentSchema } from "./comments.schema.js";
-import ApplicationError from '../../error handle/applicationError.js'
+import ApplicationError from "../../utils/error handle/applicationError.js";
 import { PostModel } from "../posts/post.repository.js";
+
 
 export const CommentModel = mongoose.model('Comment', commentSchema);
 

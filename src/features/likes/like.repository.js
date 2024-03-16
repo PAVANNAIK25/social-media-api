@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { likeSchema } from "./like.schema.js";
 import { PostModel } from "../posts/post.repository.js";
-import ApplicationError from "../../error handle/applicationError.js";
+import ApplicationError from "../../utils/error handle/applicationError.js";
 
 
 const LikeModel = mongoose.model('Like', likeSchema);

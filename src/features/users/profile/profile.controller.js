@@ -6,7 +6,7 @@ export default class ProfileController{
     }
 
     async getUserProfile(req, res, next){
-        const userId = req.userId;
+        const userId = req.params.userId;
         try{
             const user = await this.profileRepository.getUserProfile(userId);
             res.status(200).send(user);

@@ -1,5 +1,5 @@
-import ApplicationError from "../../../error handle/applicationError.js";
-import { UserModel } from "../authentication/user.repository.js";
+import ApplicationError from "../../../utils/error handle/applicationError.js";
+import { UserModel } from "../authentication/user.schema.js";
 
 export default class ProfileRepository {
 

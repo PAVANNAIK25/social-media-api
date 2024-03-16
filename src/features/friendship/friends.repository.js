@@ -1,6 +1,6 @@
-import ApplicationError from "../../error handle/applicationError.js";
+import ApplicationError from "../../utils/error handle/applicationError.js";
 import { FriendModel } from "./friends.schema.js";
-import { UserModel } from "../users/authentication/user.repository.js";
+import { UserModel } from "../users/authentication/user.schema.js";
 
 
 export default class FriendsRepository {

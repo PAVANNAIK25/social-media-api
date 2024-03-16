@@ -1,87 +1,93 @@
 import mongoose from "mongoose";
 import { postSchema } from "./post.schema.js";
-import ApplicationError from "../../error handle/applicationError.js"
+import ApplicationError from "../../utils/error handle/applicationError.js";
 
 
 export const PostModel = mongoose.model('Post', postSchema);
 
-export default class PostRepository{
+export default class PostRepository {
 
-    async createPost(caption, imageUrl, userId){
-        try{
-            const newPost = new PostModel({caption, imageUrl, user: userId});
+    async createPost(caption, imageUrl, userId) {
+        try {
+            const newPost = new PostModel({ caption, imageUrl, user: userId });
             return await newPost.save();
-        }catch(err){
+        } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong with Datatbase", 500);
         }
 
     }
 
-    async updatePost(postId, userId, caption, imageUrl){
-        try{
-            const post = await PostModel.findOne({_id: new mongoose.Types.ObjectId(postId), user: new mongoose.Types.ObjectId(userId)});
-            if(!post){
+    async updatePost(postId, userId, caption, imageUrl) {
+        try {
+            const post = await PostModel.findOne({ _id: new mongoose.Types.ObjectId(postId), user: new mongoose.Types.ObjectId(userId) });
+            if (!post) {
                 return {
                     success: false,
                     message: "Post not found"
                 }
             }
 
-            if(caption){
+            if (caption) {
                 post.caption = caption;
             }
 
-            if(imageUrl){
+            if (imageUrl) {
                 post.imageUrl = imageUrl;
             }
             return await post.save();
 
-        }catch(err){
+        } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong with Datatbase", 500);
         }
     }
 
-    async deletePost(postId, userId){
-        try{
-            const deleted = await PostModel.deleteOne({_id: new mongoose.Types.ObjectId(postId), user: new mongoose.Types.ObjectId(userId)});
-            return deleted.deletedCount>0;
+    async deletePost(postId, userId) {
+        try {
+            const deleted = await PostModel.deleteOne({ _id: new mongoose.Types.ObjectId(postId), user: new mongoose.Types.ObjectId(userId) });
+            return deleted.deletedCount > 0;
 
-        }catch(err){
+        } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong with Datatbase", 500);
         }
     }
 
-    async getAllPost(){
-        try{
-            const posts = await PostModel.find();
-            return posts;
-        }catch(err){
+    async getAllPost(page) {
+        let perPage = 10;
+        try {
+            const posts = await PostModel.find().skip(
+                ((page - 1) * perPage)).limit(perPage);
+            const totalPosts = await PostModel.countDocuments();
+            return {
+                posts,
+                totalPosts
+            };
+        } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong with Datatbase", 500);
         }
     }
 
-    async getPost(postId){
-        try{
+    async getPost(postId) {
+        try {
             const post = await PostModel.findById(postId);
             return post;
-        }catch(err){
+        } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong with Datatbase", 500);
         }
     }
 
-    async getPostByUser(userId){
-        try{
-            const posts = await PostModel.find({user:userId});
+    async getPostByUser(userId) {
+        try {
+            const posts = await PostModel.find({ user: userId });
             return posts;
-        }catch(err){
+        } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong with Datatbase", 500);
         }
     }
-    
+
 }

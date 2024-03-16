@@ -58,10 +58,18 @@ export default class PostController {
     }
 
     async getAllPost(req, res, next) {
+        let page = req.query.page;
+        if(!page){
+            page=1;
+        }
         try {
-            const posts = await this.postRepository.getAllPost();
-            if (posts) {
-                return res.status(200).send(posts);
+            const result = await this.postRepository.getAllPost(page);
+            if (result) {
+                return res.status(200).json({
+                    page:page,
+                    totalPages:parseInt(result.totalPosts/10),
+                    posts:result.posts
+                });
             } else {
                 res.status(400).send("Post not found");
             }
@@ -92,6 +100,9 @@ export default class PostController {
 
     async getPostByUser(req, res, next) {
         const userId = req.userId;
+        if(!page){
+            page=1;
+        }
         try {
             const posts = await this.postRepository.getPostByUser(userId);
             if (posts) {
@@ -103,7 +114,6 @@ export default class PostController {
             console.log(err);
             next(err);
         }
-
     }
 
 }

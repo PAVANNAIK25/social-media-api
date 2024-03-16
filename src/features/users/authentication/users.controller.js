@@ -1,29 +1,19 @@
+import ApplicationError from "../../../utils/error handle/applicationError.js";
 import UserRepository from "./user.repository.js";
-import bcrypt from 'bcrypt';
+import ApiResponse from "../../../utils/apiResponse.js";
 
 
 export default class UserController {
-
     constructor() {
         this.userRepository = new UserRepository();
     }
-
+    // This method is used to sign Up
     async signUp(req, res, next) {
         try {
-            const password = req.body.password;
-            const hashedPassword = await bcrypt.hash(password, 12);
-            const userData = {
-                name: req.body.name,
-                email: req.body.email,
-                password: hashedPassword,
-                gender: req.body.gender
-            }
-            const user = await this.userRepository.signUp(userData);
-            res.status(201).send(user);
-
+            const user = await this.userRepository.signUp(req.body);
+            res.status(201).send(ApiResponse(201, user, "Registration Successful"));
         } catch (err) {
-            console.log(err);
-            next(err);
+            next(new ApplicationError(err.message, 400));
         }
     }
 
@@ -32,13 +22,18 @@ export default class UserController {
         try {
             const result = await this.userRepository.signIn(email, password);
             if (result.success) {
+                // attaching jwt token to cookie
                 res.cookie('jwt', result.token, {
                     maxAge: 60 * 60 * 24 * 1000
                 });
-                return res.status(200).send("Login Successful!");
-            } else {
-                res.status(400).send("Invalid credentials");
+                return res.status(200).json({
+                    success: result.success,
+                    message: result.message,
+                    token: result.token
+                });
             }
+            
+            res.status(400).send("Invalid credentials");
 
         } catch (err) {
             console.log(err);

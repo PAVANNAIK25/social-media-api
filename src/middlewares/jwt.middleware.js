@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { UserModel } from '../features/users/authentication/user.repository.js';
+import { UserModel } from '../features/users/authentication/user.schema.js';
 
 export const auth = async (req, res, next)=>{
     //verifying if token is received
