@@ -12,7 +12,8 @@ import commentRouter from './src/features/comments/comments.routes.js';
 import likesRouter from './src/features/likes/like.routes.js';
 import friendsRouter from './src/features/friendship/friends.routes.js';
 import otpRouter from './src/features/otp/otp.routes.js';
-import apidocs from './swagger.json' assert{type:'json'};
+import apidocs from './swagger.json' assert{type: 'json'};
+import profileRouter from './src/features/users/profile/profile.routes.js';
 
 
 // initializing express app
@@ -20,23 +21,25 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api-docs", swagger.serve, swagger.setup(apidocs));
+app.use("/api-docs", swagger.serve, 
+    swagger.setup(apidocs, {customSiteTitle: "Social Media API"}));
 
 // routers different routes
 app.use("/api/users", userRouter);
+app.use("/api/profile", profileRouter);
 app.use("/api/posts", auth, postRouter);
 app.use("/api/comments", auth, commentRouter);
 app.use("/api/likes", auth, likesRouter);
 app.use("/api/friends", auth, friendsRouter);
 app.use("/api/otp", otpRouter);
 
-app.get("/", (req, res)=>{
+app.get("/", (req, res) => {
     res.send("Welcome to postaway II");
 })
 
 // Application level error handling
-app.use((err, req, res, next)=>{
-    if(err instanceof ApplicationError){
+app.use((err, req, res, next) => {
+    if (err instanceof ApplicationError) {
         return res.status(err.code).send(err.message);
     }
 

@@ -5,9 +5,10 @@ import ApplicationError from '../../../utils/error handle/applicationError.js';
 export default class UserRepository {
 
     async signUp(userData) {
+        userData.role = userData.role.toUpperCase();
         const newUser = new UserModel(userData);
         await newUser.save();
-        return await UserModel.findById(newUser._id).select('name email gender');
+        return await UserModel.findById(newUser._id).select('name email role gender');
     }
 
     async signIn(email, password) {
@@ -30,6 +31,25 @@ export default class UserRepository {
         } else {
             return { success: false };
         }
+    }
+
+    async logout(userId, token){
+        const user  = await UserModel.findById(userId);
+        if (!user) {
+            return {
+                success: false,
+                message: 'User not found'
+            };
+        }
+        const result = await user.clearSession(token);
+        await user.save();
+        if(!result){
+            return { success: false };
+        }
+        return {
+            success: true,
+            message: "You have been successfully logged out"
+        }
 
     }
 
@@ -41,7 +61,9 @@ export default class UserRepository {
             }
             user.sessions = [];
             await user.save();
-
+            return {
+                success:true
+            }
         } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong with Datatbase", 500);

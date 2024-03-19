@@ -1,54 +1,92 @@
+import mongoose from "mongoose";
 import ApplicationError from "../../../utils/error handle/applicationError.js";
 import { UserModel } from "../authentication/user.schema.js";
+import { ProfileModel } from "./profile.schema.js";
 
 export default class ProfileRepository {
 
     async getUserProfile(userId) {
-        try {
-            const user = await UserModel.findById(userId).select('name email gender');
-            return user;
-
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Database", 500);
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new ApplicationError("User does not exists", 404);
         }
+
+        let profile = await ProfileModel.aggregate([
+            {
+                $match: {
+                    owner: new mongoose.Types.ObjectId(userId),
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "account",
+                    pipeline: [
+                        {
+                            $project: {
+                                name: 1,
+                                email: 1,
+                                gender: 1,
+                                role: 1
+                            }
+                        }
+                    ]
+                },
+            }
+
+        ])
+
+        if (!profile) {
+            throw new ApplicationError("User Profile does not exist", 404);
+        }
+        return profile[0];
     }
 
-    async getAllUsers() {
-        try {
-            const users = await UserModel.find().select("name email gender");
-            return users;
+    async updateCoverImageRepo(userId, fileLocalPath, fileStaticUrl) {
 
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Database", 500);
-        }
+        await ProfileModel.findOneAndUpdate(
+            { owner: new mongoose.Types.ObjectId(userId) },
+            {
+                $set: {
+                    coverImage: {
+                        url: fileStaticUrl,
+                        localPath: fileLocalPath
+                    }
+                }
+            },
+            { new: true }
+        );
+
+        const profile = await this.getUserProfile(userId);
+        return profile;
     }
 
-    async updateDetails(userId, name, email, gender) {
-        try {
-            const user = await UserModel.findById(userId).select({name:1, email:1, gender:1});
+    async updateOrCreateProfileRepo(userId, data) {
+        const { firstName, lastName, dob, bio, location, phoneNumber } = data;
 
-            if(name){
-                user.name= name;
-            }
+        let profile = await ProfileModel.findOneAndUpdate(
+            {
+                owner: new mongoose.Types.ObjectId(userId)
+            },
+            {
+                $set: {
+                    firstName,
+                    lastName,
+                    bio,
+                    dob: new Date(dob),
+                    location,
+                    phoneNumber
+                }
+            },
+            { new: true }
 
-            if(email){
-                user.email = email;
-            }
+        );
 
-            if(gender){
-                user.gender = gender;
-            }
+        profile = await this.getUserProfile(userId);
+        return profile;
 
-            await user.save();
-            
-            return user;
-
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Database", 500);
-        }
     }
 
 }

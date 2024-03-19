@@ -35,6 +35,108 @@
                         "type": "string"
                     }
                 }
+            },
+            "userProfile": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "number"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "coverImage": {
+                                "type": "object",
+                                "properties": {
+                                    "_id": {
+                                        "type": "string"
+                                    },
+                                    "localPath": {
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "dob": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "bio": {
+                                "type": "string"
+                            },
+                            "phoneNumber": {
+                                "type": "string"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "account": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "responseUser": {
+                "type": "object",
+                "properties": {
+                    "statusCode": {
+                        "type": "number"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "email": {
+                                "type": "string"
+                            },
+                            "gender": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
             }
         }
     },
@@ -44,8 +146,8 @@
                 "tags": [
                     "Users Authentication"
                 ],
-                "summary": "User can sign up",
-                "description": "Users register by submitting details to the registration route, server validates, stores data, and returns a success message.",
+                "summary": "Register User",
+                "description": "The API endpoint allows users to register or signup to create their accounts.",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -73,7 +175,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/user"
+                                    "$ref": "#/components/schemas/responseUser"
                                 }
                             }
                         }
@@ -86,8 +188,8 @@
                 "tags": [
                     "Users Authentication"
                 ],
-                "summary": "User can sign in",
-                "description": "User submits credentials to login, server verifies, generates JWT token, client stores, and uses for accessing protected routes.",
+                "summary": "Login User",
+                "description": "The API endpoint allows users to log into the application securely and also returns an access token. \n \n When accessing this endpoint with valid login credentials, users will receive an access token in the response. \n \n Additionally, the API endpoint securely sets the access token within the browser/client httpOnly cookies for future authentication and authorization purposes. \n \n This functionality ensures a secure and efficient login process for users, providing them with an access token that can be used to authenticate subsequent API requests. \n \n By securely storing the access token in browser cookies, the endpoint enables automatic inclusion of the access token in future API requests, eliminating the need for users to manually manage and provide the token with each request.",
                 "security": [
                     {
                         "cookieAuth": []
@@ -121,6 +223,29 @@
                                     "example": "jwt=Jkt546ysflasbhgsdhfawiox"
                                 }
                             }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     "400": {
@@ -134,11 +259,32 @@
                 "tags": [
                     "Users Authentication"
                 ],
-                "summary": "Logout Link",
-                "description": "User logout using this API",
+                "summary": "Logout User",
+                "description": "The API endpoint is responsible for logging out users from the application and destroying the access token cookies stored on the client-side. \n \n When accessing this endpoint, it triggers the logout process, revoking the user's authentication and terminating their active session.\n \n Additionally, it ensures that any access token cookies associated with the user's session are removed from the client's browser, effectively logging them out from the application.",
                 "responses": {
                     "200": {
-                        "description": "Logout successful"
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     }
                 }
             }
@@ -148,66 +294,26 @@
                 "tags": [
                     "Users Authentication"
                 ],
-                "summary": "Logs out the user from all devices",
-                "description": "Logs out the user from all devices",
+                "summary": "Logout User from All sessions",
+                "description": "The API endpoint is responsible for logging out users from the application and destroying the access token cookies stored on the client-side from all devices. \n \n When accessing this endpoint, it triggers the logout process, revoking the user's authentication and terminating their all active sessions.\n \n Additionally, it ensures that any access token cookies associated with the user's session are removed from the client's browser, effectively logging them out from the application.",
                 "responses": {
                     "200": {
-                        "description": "Logout successful"
-                    }
-                }
-            }
-        },
-        "/users/get-all-details": {
-            "get": {
-                "tags": [
-                    "Users Profile"
-                ],
-                "summary": "Get all users",
-                "description": "Retrieve the list of all users",
-                "responses": {
-                    "200": {
-                        "description": "List of all users",
+                        "description": "Logout successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/user"
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
                                     }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Unauthorized"
-                    }
-                }
-            }
-        },
-        "/users/get-details/{userId}": {
-            "get": {
-                "tags": [
-                    "Users Profile"
-                ],
-                "summary": "Get user Details",
-                "description": "Retrieve details of a user",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "userId",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Retrieve details of a user",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/user"
                                 }
                             }
                         }
@@ -218,13 +324,37 @@
                 }
             }
         },
-        "/users/update-details/{userId}": {
-            "put": {
+        "/profile": {
+            "get": {
                 "tags": [
                     "Users Profile"
                 ],
-                "summary": "Update user Details",
-                "description": "Update user details",
+                "summary": "Get my profile",
+                "description": "The API endpoint allows a logged-in user to fetch their social media profile. \n \n  When the user is authenticated and authorized, accessing this endpoint will return the user's social media profile information, such as their username, bio, avatar, cover image, and other relevant details.",
+                "responses": {
+                    "200": {
+                        "description": "Get my profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/userProfile"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/profile/{userId}": {
+            "get": {
+                "tags": [
+                    "Users Profile"
+                ],
+                "summary": "Get Profile by User",
+                "description": "The API endpoint allows users to fetch another user's social media profile based on the userId provided as a path variable. \n \n By accessing this endpoint and providing the userId as a parameter, you will receive a response containing the social media profile information of the specified user.",
                 "parameters": [
                     {
                         "in": "path",
@@ -235,24 +365,70 @@
                         }
                     }
                 ],
-                "requestBody":{
+                "responses": {
+                    "200": {
+                        "description": "Get profile by User",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/userProfile"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/profile/": {
+            "patch": {
+                "tags": [
+                    "Users Profile"
+                ],
+                "summary": "Create or Update user profile",
+                "description": "The API endpoint allows users to create or update their social media profiles. \n\n By accessing this endpoint, users can make changes to their profile information such as name, bio, contact details, dob, basic details or any other relevant fields. \n \n NOTE: To update cover image we have separate endpoint. \n\n Update cover image: Apps > Social Media > Update cover image",
+                "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/user"
+                                "type": "object",
+                                "properties": {
+                                    "firstName": {
+                                        "type": "string"
+                                    },
+                                    "lastName": {
+                                        "type": "string"
+                                    },
+                                    "dob": {
+                                        "type": "string"
+                                    },
+                                    "location": {
+                                        "type": "string"
+                                    },
+                                    "bio": {
+                                        "type": "string"
+                                    },
+                                    "phoneNumber": {
+                                        "type": "string"
+                                    },
+                                    "owner": {
+                                        "type": "string"
+                                    }
+                                }
                             }
                         }
-                    } 
-                    
+                    }
                 },
                 "responses": {
                     "200": {
-                        "description": "Retrieve details of a user",
+                        "description": "Updated user Profile",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/user"
+                                    "$ref": "#/components/schemas/userProfile"
                                 }
                             }
                         }
@@ -263,33 +439,48 @@
                 }
             }
         },
-        "/posts/all":{
-            "get":{
+        "/profile/cover-image": {
+            "patch": {
                 "tags": [
-                    "Posts"
+                    "Users Profile"
                 ],
-                "summary": "Retrieve all posts",
-                "description": "Retrieve the all posts",
+                "summary": "Update cover image",
+                "description": "The API endpoint allows users to update their social media profile's cover image. \n \n By accessing this endpoint, users can submit a new cover image file, which will be applied as their updated profile cover on the social media platform.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "coverImage":{
+                                        "description": "File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
-                        "description": "All posts",
+                        "description": "Updated user Profile",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/user"
-                                    }
+                                    "$ref": "#/components/schemas/userProfile"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Unauthorized"
+                        "description": "Bad Request"
                     }
-                }                                
+                }
             }
-        }        
-
+        }
+        
     }
 }
