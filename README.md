@@ -11,4 +11,4 @@ This document provides information about the Social Media API, which allows deve
 - Developers need to obtain API keys and secrets from each social media platform to authenticate requests.
 
 ## Documentation
-- Please visit this link <a href="google.com">Click here </a>
+- Please visit this link <a href="https://social-media-api-1caq.onrender.com/api-docs">Click here </a>
