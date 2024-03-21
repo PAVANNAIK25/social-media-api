@@ -1,5 +1,5 @@
 
 [[redirects]]
-from:"*"
-to:"/server.js"
+from="*"
+to="/server.js"
 status=200
