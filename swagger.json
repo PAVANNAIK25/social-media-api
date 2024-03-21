@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://social-media-api-1caq.onrender.com/"
+            "url": "https://social-media-api-1caq.onrender.com/api"
         }
     ],
     "components": {
