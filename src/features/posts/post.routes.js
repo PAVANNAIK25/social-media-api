@@ -23,7 +23,7 @@ postRouter.get("/:postId", (req, res, next)=>{
 })
 
 //POST requests
-postRouter.post("/", upload.single('imageUrl'), (req, res, next)=>{
+postRouter.post("/", upload.array('images', 6), (req, res, next)=>{
     postController.createPost(req, res, next)
     
 })
@@ -35,7 +35,6 @@ postRouter.put("/:postId", upload.single('imageUrl'), (req, res, next)=>{
 })
 
 //delete Requests
-
 postRouter.delete("/:postId", (req, res, next)=>{
     postController.deletePost(req, res, next)
     

@@ -2,3 +2,4 @@ node_modules
 .env
 final
 final.zip
+public/uploads

@@ -1,21 +1,85 @@
 import mongoose from "mongoose";
-import { postSchema } from "./post.schema.js";
-import ApplicationError from "../../utils/error handle/applicationError.js";
+import { PostModel } from "./post.schema.js";
+import ApplicationError from "../../utils/error handle/applicationError.js"
 
 
-export const PostModel = mongoose.model('Post', postSchema);
+const commonPostAggregater = () => {
+    return [
+        {
+            $lookup: {
+                from: 'profiles',
+                localField: 'author',
+                foreignField: 'owner',
+                as: "author",
+                pipeline: [{
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: "account",
+                        pipeline: [{
+                            $project: {
+                                name: 1,
+                                email: 1,
+                                gender: 1,
+                                role: 1
+                            },
+                        }]
+                    }
+                },
+                {
+                    $addFields: {
+                        account: { $first: "$account" }
+                    }
+
+                }
+                ]
+
+            }
+
+        },
+
+        {
+            $addFields: {
+                comments_counts: { $size: "$comments" },
+                likes_counts: { $size: "$likes" },
+                author: { $first: "$author" },
+            }
+        },
+        {
+            $project: {
+                author: 1,
+                content: 1,
+                tags: 1,
+                images: 1,
+                comments: {
+                    $cond: [{ $gt: [{ $size: "$comments" }, 0] }, "$comments", null]
+                },
+                likes: {
+                    $cond: [{ $gt: [{ $size: "$likes" }, 0] }, "$likes", null]
+                },
+                createdAt: { $toDate: '$_id' },
+                updatedAt: { $toDate: '$_id' }
+            }
+        }
+
+
+    ];
+
+}
 
 export default class PostRepository {
 
-    async createPost(caption, imageUrl, userId) {
-        try {
-            const newPost = new PostModel({ caption, imageUrl, user: userId });
-            return await newPost.save();
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Datatbase", 500);
-        }
-
+    async createPost(content, images, userId, tags) {
+        const newPost = new PostModel({ content, tags, images, author: userId });
+        await newPost.save();
+        const post = await PostModel.aggregate([
+            {
+                $match: { _id: newPost._id }
+            },
+            ...commonPostAggregater(),
+        ]);
+        return post[0];
     }
 
     async updatePost(postId, userId, caption, imageUrl) {
@@ -56,38 +120,38 @@ export default class PostRepository {
 
     async getAllPost(page) {
         let perPage = 10;
-        try {
-            const posts = await PostModel.find().skip(
-                ((page - 1) * perPage)).limit(perPage);
-            const totalPosts = await PostModel.countDocuments();
-            return {
-                posts,
-                totalPosts
-            };
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Datatbase", 500);
-        }
+
+        const posts = await PostModel.find().skip(
+            ((page - 1) * perPage)).limit(perPage);
+        const totalPosts = await PostModel.countDocuments();
+        return {
+            posts,
+            totalPosts
+        };
+
     }
 
     async getPost(postId) {
-        try {
-            const post = await PostModel.findById(postId);
-            return post;
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Datatbase", 500);
-        }
+
+        const post = await PostModel.aggregate([
+            {
+                $match: { _id: new mongoose.Types.ObjectId(postId) }
+            },
+            ...commonPostAggregater()
+
+        ])
+        return post[0];
+
     }
 
     async getPostByUser(userId) {
-        try {
-            const posts = await PostModel.find({ user: userId });
-            return posts;
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Datatbase", 500);
-        }
+
+        const posts = await PostModel.aggregate([
+            { $match: { author: userId } },
+            ...commonPostAggregater(),
+        ]);
+        return posts;
+
     }
 
 }

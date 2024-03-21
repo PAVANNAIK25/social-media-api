@@ -1,3 +1,6 @@
+import ApiResponse from "../../utils/apiResponse.js";
+import ApplicationError from "../../utils/error handle/applicationError.js";
+import { getLocalePath, getStaticUrl } from "../../utils/helpers.js";
 import PostRepository from "./post.repository.js";
 
 export default class PostController {
@@ -6,15 +9,22 @@ export default class PostController {
     }
 
     async createPost(req, res, next) {
-        const { caption } = req.body;
+        const { caption, tags } = req.body;
         const userId = req.userId;
-        const imageUrl = req.file.path;
+        let imagesArray = [];
         try {
-            const post = await this.postRepository.createPost(caption, imageUrl, userId);
-            res.status(201).send(post);
+            req?.files.forEach(file => {
+                const url = getStaticUrl(req, file.filename);
+                const localPath = getLocalePath(file.filename);
+                imagesArray.push({
+                    url,
+                    localPath
+                });
+            });
 
+            const post = await this.postRepository.createPost(caption, imagesArray, userId, tags);
+            res.status(201).send(ApiResponse(201, post, "Post successfully created!"));
         } catch (err) {
-            console.log(err);
             next(err);
         }
     }
@@ -59,16 +69,16 @@ export default class PostController {
 
     async getAllPost(req, res, next) {
         let page = req.query.page;
-        if(!page){
-            page=1;
+        if (!page) {
+            page = 1;
         }
         try {
             const result = await this.postRepository.getAllPost(page);
             if (result) {
                 return res.status(200).json({
-                    page:page,
-                    totalPages:parseInt(result.totalPosts/10),
-                    posts:result.posts
+                    page: page,
+                    totalPages: parseInt(result.totalPosts / 10),
+                    posts: result.posts
                 });
             } else {
                 res.status(400).send("Post not found");
@@ -85,13 +95,12 @@ export default class PostController {
         const postId = req.params.postId;
         try {
             const post = await this.postRepository.getPost(postId);
-            if (post) {
-                return res.status(200).send(post);
-            } else {
-                res.status(400).send("Post not found");
+            if (!post) {
+                throw new ApplicationError("Post not found!", 400);
             }
+            res.status(200).send(ApiResponse(200, post, "Post retrived successfully"));
+
         } catch (err) {
-            console.log(err);
             next(err);
         }
 
@@ -100,8 +109,8 @@ export default class PostController {
 
     async getPostByUser(req, res, next) {
         const userId = req.userId;
-        if(!page){
-            page=1;
+        if (!page) {
+            page = 1;
         }
         try {
             const posts = await this.postRepository.getPostByUser(userId);

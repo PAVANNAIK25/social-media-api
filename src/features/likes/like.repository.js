@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { likeSchema } from "./like.schema.js";
-import { PostModel } from "../posts/post.repository.js";
+import { PostModel } from "../posts/post.schema.js";
 import ApplicationError from "../../utils/error handle/applicationError.js";
 
 
