@@ -1,5 +1,5 @@
 
 [[redirects]]
-from="*"
-to="/server.js"
-status=200
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
