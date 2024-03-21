@@ -29,7 +29,9 @@ export default class UserRepository {
                 token: token
             };
         } else {
-            return { success: false };
+            // return { success: false,
+            //         message: "Invalid credentials" };
+            throw new ApplicationError("Invalid credentials", 400);
         }
     }
 

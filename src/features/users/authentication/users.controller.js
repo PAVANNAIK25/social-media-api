@@ -27,7 +27,7 @@ export default class UserController {
                 });
                 return res.status(200).json(new ApiResponse(200, { token: result.token }, result.message));
             }
-            res.status(400).send(new ApiResponse(400, "", result.message));
+            // res.status(400).send(new ApiResponse(400, "Invalid Credentials", result.message));
 
         } catch (err) {
             next(err);
