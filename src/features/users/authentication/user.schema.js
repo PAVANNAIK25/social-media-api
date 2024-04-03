@@ -53,7 +53,7 @@ userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
     }
-    this.password = await bcrypt.hash(this.password, 12);
+    this.password = bcrypt.hash(this.password, 12);
     next();
 
 });
@@ -71,7 +71,7 @@ userSchema.methods.verifyPassword = async function (password) {
 }
 
 userSchema.methods.generateAccessToken = async function () {
-    const token = await jwt.sign({ userId: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
+    const token = jwt.sign({ userId: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
     this.sessions.push(token);
     return token;
 }

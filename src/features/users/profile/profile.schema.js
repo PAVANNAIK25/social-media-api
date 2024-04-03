@@ -32,7 +32,7 @@ const profileSchema = mongoose.Schema({
         default: "",
     },
     phoneNumber: {
-        type: String,
+        type: Number,
         default: "",
     },
     owner: {

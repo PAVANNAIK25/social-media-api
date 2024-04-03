@@ -9,7 +9,7 @@ export default class PostController {
     }
 
     async createPost(req, res, next) {
-        const { caption, tags } = req.body;
+        const { content, tags } = req.body;
         const userId = req.userId;
         let imagesArray = [];
         try {
@@ -22,8 +22,8 @@ export default class PostController {
                 });
             });
 
-            const post = await this.postRepository.createPost(caption, imagesArray, userId, tags);
-            res.status(201).send(ApiResponse(201, post, "Post successfully created!"));
+            const post = await this.postRepository.createPost(content, imagesArray, userId, tags);
+            res.status(201).send(new ApiResponse(201, post, "Post successfully created!"));
         } catch (err) {
             next(err);
         }
@@ -31,37 +31,36 @@ export default class PostController {
 
     async updatePost(req, res, next) {
         const postId = req.params.postId;
-        const { caption } = req.body;
+        const { content, tags } = req.body;
         const userId = req.userId;
-        let imageUrl;
-        if (req.file) {
-            imageUrl = req.file.path;
-        }
+        let imagesArray = [];
         try {
-            const updatedPost = await this.postRepository.updatePost(postId, userId, caption, imageUrl);
-            if (!updatedPost.success) {
-                return res.status(400).send(updatedPost.message);
-            }
-            res.status(200).send(updatedPost);
+            req?.files.forEach(file => {
+                const url = getStaticUrl(req, file.filename);
+                const localPath = getLocalePath(file.filename);
+                imagesArray.push({
+                    url,
+                    localPath
+                });
+            });
+
+            const post = await this.postRepository.updatePost(postId, content, imagesArray, userId, tags);
+            res.status(200).send(new ApiResponse(200, post, "Post updated successfully!"));
         } catch (err) {
-            console.log(err);
             next(err);
         }
     }
 
+    // This controller is used to delete the post
     async deletePost(req, res, next) {
         const postId = req.params.postId;
         const userId = req.userId;
-
         try {
-            const deletedCount = await this.postRepository.deletePost(postId, userId);
-            if (deletedCount) {
-                return res.status(200).send("The post deleted successfully!");
-            } else {
-                res.status(400).send("Post not found");
+            const result = await this.postRepository.deletePost(postId, userId);
+            if (result) {
+                return res.status(200).send(new ApiResponse(200, {}, "The post deleted successfully!"));
             }
         } catch (err) {
-            console.log(err);
             next(err);
         }
 
@@ -74,17 +73,18 @@ export default class PostController {
         }
         try {
             const result = await this.postRepository.getAllPost(page);
-            if (result) {
-                return res.status(200).json({
-                    page: page,
-                    totalPages: parseInt(result.totalPosts / 10),
-                    posts: result.posts
-                });
-            } else {
-                res.status(400).send("Post not found");
+            if (result.posts) {
+                return res.status(200).json(
+
+                    new ApiResponse(200, {
+                        page: `${page}/${parseInt((result.totalPosts / 10) + 1)}`,
+                        totalPosts: result.totalPosts,
+                        posts: result.posts
+                    }, "Posts retrived successfully"
+                    ))
+
             }
         } catch (err) {
-            console.log(err);
             next(err);
         }
 
@@ -106,21 +106,23 @@ export default class PostController {
 
     }
 
-
+    // get the post created by users
     async getPostByUser(req, res, next) {
         const userId = req.userId;
+        const page = req.query.page;
         if (!page) {
             page = 1;
         }
         try {
-            const posts = await this.postRepository.getPostByUser(userId);
-            if (posts) {
-                return res.status(200).send(posts);
-            } else {
-                res.status(400).send("Post not found");
+            const result = await this.postRepository.getPostByUser(userId, page);
+            if (result.posts) {
+                return res.status(200).send(new ApiResponse(200, {
+                    page: `${page}/${parseInt((result.totalPosts / 10) + 1)}`,
+                    totalPosts: result.totalPosts,
+                    posts: result.posts
+                }, "Posts retrived successfully"));
             }
         } catch (err) {
-            console.log(err);
             next(err);
         }
     }

@@ -78,7 +78,7 @@
                                 "type": "string"
                             },
                             "phoneNumber": {
-                                "type": "string"
+                                "type": "number"
                             },
                             "owner": {
                                 "type": "string"
@@ -110,12 +110,12 @@
             "responseUser": {
                 "type": "object",
                 "properties": {
-                    "statusCode": {
-                        "type": "number"
-                    },
                     "data": {
                         "type": "object",
                         "properties": {
+                            "statusCode": {
+                                "type": "number"
+                            },
                             "id": {
                                 "type": "string"
                             },
@@ -134,6 +134,123 @@
                         }
                     },
                     "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "responsePost": {
+                "type": "object",
+                "properties": {
+                    "_id": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "url": {
+                                    "type": "string"
+                                },
+                                "localPath": {
+                                    "type": "string"
+                                },
+                                "_id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "author": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "coverImage": {
+                                "type": "object",
+                                "properties": {
+                                    "_id": {
+                                        "type": "string"
+                                    },
+                                    "localPath": {
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "dob": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "bio": {
+                                "type": "string"
+                            },
+                            "phoneNumber": {
+                                "type": "number"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "account": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "comments": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "_id": {
+                                    "type": "string"
+                                },
+                                "text": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "likes": {
+                        "type": "number"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
                         "type": "string"
                     }
                 }
@@ -412,7 +529,7 @@
                                         "type": "string"
                                     },
                                     "phoneNumber": {
-                                        "type": "string"
+                                        "type": "number"
                                     },
                                     "owner": {
                                         "type": "string"
@@ -453,13 +570,12 @@
                             "schema": {
                                 "type": "object",
                                 "properties": {
-                                    "coverImage":{
+                                    "coverImage": {
                                         "description": "File",
                                         "type": "string",
                                         "format": "binary"
                                     }
                                 }
-
                             }
                         }
                     }
@@ -480,7 +596,351 @@
                     }
                 }
             }
+        },
+        "/posts/": {
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Create a post",
+                "description": "The API allows a logged-in user to create a social media post by providing the necessary details in the request body. \n\n The user can include the content of the post, relevant tags, and attach images (upto 6) as part of the request. \n\n NOTE: As this api requires formData to be used, to send multiple tags client must send them with the respective index.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "images": {
+                                        "type": "array",
+                                        "maxItems": 6,
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "maxItems": 3,
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Create a post",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/responsePost"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Get all users posts",
+                "description": "The API endpoint allows users to fetch all posts posted by themselves within the social media application. \n\n By accessing this endpoint, users can retrieve a collection of posts containing relevant information.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "description": "Page number for pagination"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get all users posts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "totalPosts": {
+                                                    "type": "number"
+                                                },
+                                                "posts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/responsePost"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/posts/all":{
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Get all posts",
+                "description": "The API endpoint allows users to fetch all posts posted by themselves or other users within the social media application. \n\n By accessing this endpoint, users can retrieve a collection of posts containing relevant information.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "required": false,
+                        "schema": {
+                            "type": "number",
+                            "description": "Page number for pagination"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get all posts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "totalPosts": {
+                                                    "type": "number"
+                                                },
+                                                "posts": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/responsePost"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/posts/{postId}": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Get post by postId",
+                "description": "The API endpoint allows users to fetch a post by providing the post ID as a path variable.\n\n By accessing this endpoint and providing a valid post ID, users will receive a response containing the details of the post corresponding to the provided ID.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "postId",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Post Id to search post"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get post by postId",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/responsePost"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Update a post",
+                "description": "The API endpoint allows users to update a post by passing relevant data, along with the post ID as a path variable. \n\n By accessing this endpoint and providing the necessary data and post ID, users can modify and update the content of a specific post. \n\nNOTE: All the fields in the body and optional but must not be empty if passed in the body.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "postId",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Post Id to search post"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    },
+                                    "images": {
+                                        "type": "array",
+                                        "maxItems": 6,
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "maxItems": 3,
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Update post",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/responsePost"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "delete":{
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Delete a post",
+                "description": "The API endpoint allows users to delete a post by passing the post ID as a path variable. \n\nBy accessing this endpoint and providing the specific post ID in the URL, users can initiate the deletion of the corresponding post.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "postId",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "Post Id to search post"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete post",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {},
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
         }
-        
     }
 }

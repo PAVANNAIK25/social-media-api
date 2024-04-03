@@ -55,9 +55,7 @@ const commonPostAggregater = () => {
                 comments: {
                     $cond: [{ $gt: [{ $size: "$comments" }, 0] }, "$comments", null]
                 },
-                likes: {
-                    $cond: [{ $gt: [{ $size: "$likes" }, 0] }, "$likes", null]
-                },
+                likes: { $size:"$likes"},
                 createdAt: { $toDate: '$_id' },
                 updatedAt: { $toDate: '$_id' }
             }
@@ -82,52 +80,63 @@ export default class PostRepository {
         return post[0];
     }
 
-    async updatePost(postId, userId, caption, imageUrl) {
-        try {
-            const post = await PostModel.findOne({ _id: new mongoose.Types.ObjectId(postId), user: new mongoose.Types.ObjectId(userId) });
-            if (!post) {
-                return {
-                    success: false,
-                    message: "Post not found"
-                }
-            }
+    async updatePost(postId, content, imagesArray, userId, tags) {
 
-            if (caption) {
-                post.caption = caption;
-            }
-
-            if (imageUrl) {
-                post.imageUrl = imageUrl;
-            }
-            return await post.save();
-
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Datatbase", 500);
+        const post = await PostModel.findOne({_id: new mongoose.Types.ObjectId(postId), author: new mongoose.Types.ObjectId(userId)});
+        if (!post) {
+            throw new ApplicationError("Post not found", 404);
         }
+        if (content) {
+            post.content = content;
+        }
+        if (imagesArray) {
+            post.imagesArray = imagesArray;
+        }
+        if (tags) {
+            post.tags = tags;
+        }
+        await post.save();
+        const updatedPost = await PostModel.aggregate([
+            {
+                $match: { _id: post._id }
+            },
+            ...commonPostAggregater(),
+        ]);
+        return updatedPost[0];
     }
 
+    // This repository is used to delete the post
     async deletePost(postId, userId) {
-        try {
-            const deleted = await PostModel.deleteOne({ _id: new mongoose.Types.ObjectId(postId), user: new mongoose.Types.ObjectId(userId) });
-            return deleted.deletedCount > 0;
-
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Something went wrong with Datatbase", 500);
+        const deleted = await PostModel.deleteOne({ _id: new mongoose.Types.ObjectId(postId), author: new mongoose.Types.ObjectId(userId) });
+        if (deleted.deletedCount < 1) {
+            throw new ApplicationError("Post not found", 404);
         }
+        return deleted.deletedCount > 0;
+
     }
 
     async getAllPost(page) {
-        let perPage = 10;
+        let perPage = 10; // it returns 10 posts per page
 
-        const posts = await PostModel.find().skip(
-            ((page - 1) * perPage)).limit(perPage);
-        const totalPosts = await PostModel.countDocuments();
-        return {
-            posts,
-            totalPosts
-        };
+        const posts = await PostModel.aggregate([
+            {
+                $skip: (page - 1) * perPage
+            },
+            {
+                $limit: perPage
+            },
+            ...commonPostAggregater()
+        ]);
+
+        if (!posts) {
+            throw new ApplicationError("Post not found", 404);
+        } else {
+            const totalPosts = await PostModel.countDocuments();
+            return {
+                posts,
+                totalPosts
+            }
+        }
 
     }
 
@@ -138,19 +147,37 @@ export default class PostRepository {
                 $match: { _id: new mongoose.Types.ObjectId(postId) }
             },
             ...commonPostAggregater()
-
         ])
+        if (!post) {
+            throw new ApplicationError("Post not found", 404);
+        }
+
         return post[0];
 
     }
 
-    async getPostByUser(userId) {
-
+    // get the post created by users
+    async getPostByUser(userId, page) {
+        let perPage = 10;
         const posts = await PostModel.aggregate([
             { $match: { author: userId } },
+            {
+                $skip: (page - 1) * perPage
+            },
+            {
+                $limit: perPage
+            },
             ...commonPostAggregater(),
         ]);
-        return posts;
+        if (!posts) {
+            throw new ApplicationError("Post not found", 404);
+        } else {
+            const totalPosts = await PostModel.countDocuments({ author: userId });
+            return {
+                posts,
+                totalPosts
+            }
+        }
 
     }
 

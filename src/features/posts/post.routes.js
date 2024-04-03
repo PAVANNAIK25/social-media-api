@@ -1,7 +1,8 @@
 import express from 'express'
-
 import { upload } from '../../middlewares/file-upload.middleware.js';
 import PostController from './post.controller.js';
+import { createPostValidate, updatePostValidate } from '../../middlewares/validation/post.validate.js';
+import { validate } from '../../middlewares/validate.js';
 
 const postRouter = express.Router();
 const postController = new PostController();
@@ -23,13 +24,13 @@ postRouter.get("/:postId", (req, res, next)=>{
 })
 
 //POST requests
-postRouter.post("/", upload.array('images', 6), (req, res, next)=>{
+postRouter.post("/", upload.array('images', 6), createPostValidate(), validate, (req, res, next)=>{
     postController.createPost(req, res, next)
     
 })
 
-//PUT requests
-postRouter.put("/:postId", upload.single('imageUrl'), (req, res, next)=>{
+//PATCH requests
+postRouter.patch("/:postId", upload.array('images',6), updatePostValidate(), validate, (req, res, next)=>{
     postController.updatePost(req, res, next)
     
 })
