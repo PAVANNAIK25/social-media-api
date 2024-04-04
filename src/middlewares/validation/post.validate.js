@@ -1,13 +1,13 @@
 import { body } from "express-validator"
 
-export const createPostValidate = () =>{
+export const createPostValidation = () =>{
     return [
         body('content').trim().notEmpty().withMessage("Post content is required"),
         body('tags').optional().isArray().withMessage("Tags field must be an array")
     ]
 }
 
-export const updatePostValidate = () =>{
+export const updatePostValidation = () =>{
     return [
         body("content")
         .optional()

@@ -254,6 +254,86 @@
                         "type": "string"
                     }
                 }
+            },
+            "responseComment": {
+                "type": "object",
+                "properties": {
+                    "_id": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "author": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "coverImage": {
+                                "type": "object",
+                                "properties": {
+                                    "_id": {
+                                        "type": "string"
+                                    },
+                                    "localPath": {
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "firstName": {
+                                "type": "string"
+                            },
+                            "lastName": {
+                                "type": "string"
+                            },
+                            "dob": {
+                                "type": "string"
+                            },
+                            "location": {
+                                "type": "string"
+                            },
+                            "bio": {
+                                "type": "string"
+                            },
+                            "phoneNumber": {
+                                "type": "number"
+                            },
+                            "owner": {
+                                "type": "string"
+                            },
+                            "account": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "likes": {
+                        "type": "number"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    }
+                }
             }
         }
     },
@@ -622,12 +702,14 @@
                                             "format": "binary"
                                         }
                                     },
-                                    "tags": {
-                                        "type": "array",
-                                        "maxItems": 3,
-                                        "items": {
-                                            "type": "string"
-                                        }
+                                    "tags[0]": {
+                                        "type": "string"
+                                    },
+                                    "tags[1]": {
+                                        "type": "string"
+                                    },
+                                    "tags[2]": {
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -720,7 +802,7 @@
                 }
             }
         },
-        "/posts/all":{
+        "/posts/all": {
             "get": {
                 "tags": [
                     "Posts"
@@ -860,12 +942,14 @@
                                             "format": "binary"
                                         }
                                     },
-                                    "tags": {
-                                        "type": "array",
-                                        "maxItems": 3,
-                                        "items": {
-                                            "type": "string"
-                                        }
+                                    "tags[0]": {
+                                        "type": "string"
+                                    },
+                                    "tags[1]": {
+                                        "type": "string"
+                                    },
+                                    "tags[2]": {
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -899,7 +983,7 @@
                     }
                 }
             },
-            "delete":{
+            "delete": {
                 "tags": [
                     "Posts"
                 ],
@@ -941,6 +1025,343 @@
                     }
                 }
             }
+        },
+        "/comments/{postId}": {
+            "post": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Add comment",
+                "description": "The API endpoint allows users to add a comment to a specific post based on the postId provided in the path variable. \n\n When accessing this endpoint and providing a valid postId as a parameter, users can submit their comments to be associated with that particular post.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "postId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Add comment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "_id": {
+                                                    "type": "string"
+                                                },
+                                                "content": {
+                                                    "type": "string"
+                                                },
+                                                "user": {
+                                                    "type": "string"
+                                                },
+                                                "likes": {
+                                                    "type": "number"
+                                                },
+                                                "createdAt": {
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Get posts comments",
+                "description": "The API endpoint allows users to retrieve a list of comments associated with a specific post, based on the post ID provided as a path variable. \n\n When accessing this endpoint and specifying a valid post ID, the response will contain a collection of comments related to that particular post.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "postId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "number"
+                        },
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Add comment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "totalComments": {
+                                                    "type": "number"
+                                                },
+                                                "comments": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/responseComment"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Comment not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/comments/{commentId}": {
+            "patch": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Update comment",
+                "description": "The API endpoint allows users to update a comment associated with a post based on the comment ID provided in the path variable.\n \n By accessing this endpoint and specifying the comment ID, users can modify the content or other attributes of the comment associated with the post.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "commentId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "content": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Update comment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "_id": {
+                                                    "type": "string"
+                                                },
+                                                "content": {
+                                                    "type": "string"
+                                                },
+                                                "user": {
+                                                    "type": "string"
+                                                },
+                                                "likes": {
+                                                    "type": "number"
+                                                },
+                                                "createdAt": {
+                                                    "type": "string"
+                                                },
+                                                "updatedAt": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Comment not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Delete comment",
+                "description": "The API endpoint enables users to delete a specific comment on a post based on the comment ID provided in the path variable. \n\n When accessing this endpoint and specifying the comment ID in the URL, the corresponding comment will be removed from the post.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "commentId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete comment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "ackacknowledged": {
+                                                    "type": "boolean"
+                                                },
+                                                "deletedCount": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Comment not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+
     }
 }

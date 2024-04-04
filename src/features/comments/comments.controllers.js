@@ -1,51 +1,53 @@
+import ApiResponse from "../../utils/apiResponse.js";
 import CommentsRepository from "./comments.repository.js";
 
 export default class CommentsController{
 
     constructor(){
-        this.commentsRepository = new CommentsRepository();
+        this.commentsRepository = new CommentsRepository(); // instance of repository
     }
 
+    // this is controller to add comment
     async createComment(req, res, next){
-        const text = req.body.text;
+        const content = req.body.content;
         const userId = req.userId;
         const postId = req.params.postId;
         try{
-            const result = await this.commentsRepository.createComment(userId, postId, text);
-            res.status(201).send(result);
+            const result = await this.commentsRepository.createComment(userId, postId, content);
+            res.status(201).send(new ApiResponse(201, result, "Comment added successfully"));
 
         }catch(err){
-            console.log(err);
             next(err);
         }
     }
 
+    // retrives all comment of a post
     async getAllComments(req, res, next){
+        let page = req.query?.page;
         const postId = req.params.postId;
+        if(!page){
+            page =1;
+        }
         try{
-            const result = await this.commentsRepository.getAllComments(postId);
-            if(!result.success){
-                return res.status(400).send(result.message);
-            }
-            res.status(200).send(result.comments);
+            const result = await this.commentsRepository.getAllComments(postId, page);
+            res.status(200).send(new ApiResponse(200, {
+                page: `${page} / ${parseInt((result.totalComments / 5) + 1)}`,
+                totalComments: result.totalComments,
+                comments: result.comments
+            }, "Post comments fetched successfully"));
         }catch(err){
-            console.log(err);
             next(err);
         }
     }
 
     async updateComment(req, res, next){
-        const text = req.body.text;
+        const content = req.body.content;
         const userId = req.userId;
         const commentId = req.params.commentId;
         try{
-            const result = await this.commentsRepository.updateComment(userId, commentId, text);
-            if(!result.success){
-                return res.status(400).send(result.message);
-            }
-            res.status(200).send(result.comment);
+            const result = await this.commentsRepository.updateComment(userId, commentId, content);
+            res.status(200).send(new ApiResponse(200, result, "Comment updated Successfully"));
         }catch(err){
-            console.log(err);
             next(err);
         }
     }
@@ -55,12 +57,8 @@ export default class CommentsController{
         const commentId = req.params.commentId;
         try{
             const result = await this.commentsRepository.deleteComment(userId, commentId);
-            if(!result){
-                return res.status(400).send("Comment deletion unsuccessful");
-            }
-            res.status(200).send("Comment deleted successfully");
+            res.status(200).send(new ApiResponse(200, result, "Comment deleted successfully"));
         }catch(err){
-            console.log(err);
             next(err);
         }
     }

@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 
-export const commentSchema = mongoose.Schema({
-    text: {
+const commentSchema = mongoose.Schema({
+    content: {
         type: String,
         required: true
     },
@@ -18,4 +18,7 @@ export const commentSchema = mongoose.Schema({
         ref:'Like'
     }]
 
-})
+}, {timestamps: true})
+
+
+export const CommentModel = mongoose.model('Comment', commentSchema);

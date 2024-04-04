@@ -14,6 +14,7 @@ import friendsRouter from './src/features/friendship/friends.routes.js';
 import otpRouter from './src/features/otp/otp.routes.js';
 import apidocs from './swagger.json' assert{type: 'json'};
 import profileRouter from './src/features/users/profile/profile.routes.js';
+import ApiResponse from './src/utils/apiResponse.js';
 
 
 // initializing express app
@@ -37,10 +38,14 @@ app.get("/", (req, res) => {
     res.send("Welcome to postaway II");
 })
 
+app.use(function (req, res, next) {
+    return res.status(404).send("404, resource not found");
+})
+
 // Application level error handling
 app.use((err, req, res, next) => {
     if (err instanceof ApplicationError) {
-        return res.status(err.code).send(err.message);
+        return res.status(err.code).send(new ApiResponse(err.code, err.message, "Error"));
     }
 
     return res.status(500).send(err.message);

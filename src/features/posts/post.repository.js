@@ -56,8 +56,8 @@ const commonPostAggregater = () => {
                     $cond: [{ $gt: [{ $size: "$comments" }, 0] }, "$comments", null]
                 },
                 likes: { $size:"$likes"},
-                createdAt: { $toDate: '$_id' },
-                updatedAt: { $toDate: '$_id' }
+                createdAt: 1,
+                updatedAt: 1
             }
         }
 

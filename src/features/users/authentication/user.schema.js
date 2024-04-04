@@ -58,10 +58,10 @@ userSchema.pre('save', async function (next) {
 
 });
 
-userSchema.post('save', async function(user, next){
-    const socialProfile = await ProfileModel.findOne({owner: user._id});
-    if(!socialProfile){
-        await ProfileModel.create({owner: user._id});
+userSchema.post('save', async function (user, next) {
+    const socialProfile = await ProfileModel.findOne({ owner: user._id });
+    if (!socialProfile) {
+        await ProfileModel.create({ owner: user._id });
     }
     next();
 })

@@ -1,78 +1,176 @@
 import mongoose from "mongoose";
-import { commentSchema } from "./comments.schema.js";
 import ApplicationError from "../../utils/error handle/applicationError.js";
 import { PostModel } from "../posts/post.schema.js";
+import { CommentModel } from "./comments.schema.js";
 
+//common aggregation pipeline
+const commonCommentAggregation = () => {
+    return [
+        {
+            $lookup: {
+                from: 'profiles',
+                localField: 'user',
+                foreignField: 'owner',
+                as: "author",
+                pipeline: [{
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: "account",
+                        pipeline: [{
+                            $project: {
+                                name: 1,
+                                email: 1,
+                                gender: 1,
+                                role: 1
+                            },
+                        }]
+                    }
+                },
+                {
+                    $addFields: {
+                        account: { $first: "$account" }
+                    }
 
-export const CommentModel = mongoose.model('Comment', commentSchema);
+                }
+                ]
+
+            }
+
+        },
+
+        {
+            $addFields: {
+                likes_counts: { $size: "$likes" },
+                author: { $first: "$author" },
+            }
+        },
+        {
+            $project: {
+                author: 1,
+                content: 1,
+                likes: { $size: "$likes" },
+                createdAt: 1,
+                updatedAt: 1
+            }
+        }
+    ]
+
+}
 
 export default class CommentsRepository {
 
-    async createComment(userId, postId, text) {
-        try {
-            const newComment = new CommentModel({ text:text, post: postId, user: userId });
-            await newComment.save();
-            const post = await PostModel.findById(postId);
-            post.comments.push(newComment._id);
-            await post.save();
-            return newComment;
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Somthing went wrong with database", 500)
-        }
-    }
+    // this method will create a comment on a post
+    async createComment(userId, postId, content) {
+        const newComment = new CommentModel({ content, post: postId, user: userId });
+        await newComment.save();
+        const post = await PostModel.findById(postId);
+        post.comments.push(newComment._id);
+        await post.save();
+        const comment = await CommentModel.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(newComment._id)
+                }
+            },
+            {
+                $project: {
+                    content: 1,
+                    postId: 1,
+                    user: 1,
+                    likes: {
+                        $size: "$likes"
 
-    async getAllComments(postId) {
-        try {
-            const comments = await CommentModel.find({ post: new mongoose.Types.ObjectId(postId) });
-            if (!comments) {
-                return {
-                    success: false,
-                    message: "No comments found"
-                };
+                    },
+                    createdAt: 1,
+                    updatedAt: 1
+                }
             }
-            return {
-                success: true,
-                comments: comments
-            };
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Somthing went wrong with database", 500)
-        }
+
+        ])
+        return comment[0];
+
     }
 
-    async updateComment(userId, commentId, text) {
-        try {
-            const comment = await CommentModel.findOne({ _id: new mongoose.Types.ObjectId(commentId), user: new mongoose.Types.ObjectId(userId) });
-            if (!comment) {
-                return {
-                    success: false,
-                    message: "Comment not found"
-                };
-            }
-            comment.text = text;
-            await comment.save();
-            return {
-                success: true,
-                comment: comment
-            };
+    // this method will retrive all comments on a post
 
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Somthing went wrong with database", 500)
+    async getAllComments(postId, page) {
+        let perPage = 5;
+
+        const comments = await CommentModel.aggregate([
+            {
+                $match: { post: new mongoose.Types.ObjectId(postId) }
+            },
+            {
+                $skip: (page - 1) * 5
+            },
+            {
+                $limit: perPage
+            },
+            ...commonCommentAggregation()
+
+        ]);
+        if (!comments) {
+            throw new ApplicationError("Comment not found", 404);
         }
+
+        const totalComments = await CommentModel.countDocuments({ post: new mongoose.Types.ObjectId(postId) });
+
+        return { comments, totalComments };
     }
+
+    // This method will update the existing comment
+
+    async updateComment(userId, commentId, content) {
+        const comment = await CommentModel.findOneAndUpdate(
+            {
+                _id: new mongoose.Types.ObjectId(commentId),
+                user: new mongoose.Types.ObjectId(userId)
+            }, {
+            $set: { content }
+        },
+            { new: true }
+        );
+
+        if (!comment) {
+            throw new ApplicationError("Comment not found", 404);
+        }
+
+        const updatedComment = await CommentModel.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(comment._id)
+                }
+            },
+            {
+                $project: {
+                    content: 1,
+                    postId: 1,
+                    user: 1,
+                    likes: {
+                        $size: "$likes"
+
+                    },
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            },
+
+        ])
+
+        return updatedComment[0];
+    }
+
+    // this method will delete the comment based of commentId
 
     async deleteComment(userId, commentId) {
-        try {
-            const result = await CommentModel.deleteOne({ _id: new mongoose.Types.ObjectId(commentId), user: userId });
-            await PostModel.updateOne({comments: commentId}, {$pull: {comments: commentId}});
-            return result.deletedCount>0;
-
-        } catch (err) {
-            console.log(err);
-            throw new ApplicationError("Somthing went wrong with database", 500)
+        const result = await CommentModel.deleteOne({ _id: new mongoose.Types.ObjectId(commentId), user: userId });
+        await PostModel.updateOne({ comments: commentId }, { $pull: { comments: commentId } });
+        if(result.deletedCount<=0){
+            throw new ApplicationError("Comment not found", 404);
         }
+        return result;
     }
 
 }

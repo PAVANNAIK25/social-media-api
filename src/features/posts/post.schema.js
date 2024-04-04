@@ -31,6 +31,6 @@ const postSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:'Like'
     }]
-}, { timeStamp: true });
+}, { timestamps: true });
 
 export const PostModel = mongoose.model('Post', postSchema);
