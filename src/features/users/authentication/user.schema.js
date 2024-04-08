@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { ProfileModel } from "../profile/profile.schema.js";
+import crypto from 'crypto';
 
 const userSchema = mongoose.Schema({
     name: {
@@ -53,7 +54,7 @@ userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
     }
-    this.password = bcrypt.hash(this.password, 12);
+    this.password = await bcrypt.hash(this.password, 12);
     next();
 
 });
@@ -71,7 +72,7 @@ userSchema.methods.verifyPassword = async function (password) {
 }
 
 userSchema.methods.generateAccessToken = async function () {
-    const token = jwt.sign({ userId: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
+    const token = await jwt.sign({ userId: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
     this.sessions.push(token);
     return token;
 }
@@ -83,6 +84,14 @@ userSchema.methods.clearSession = async function (token) {
         return true;
     }
     return false;
+}
+
+userSchema.methods.generateTemporaryToken = async function () {
+    const unHashedToken = crypto.randomBytes(20).toString("hex");
+    const hashedToken = crypto.createHash('sha256').update(unHashedToken).digest('hex');
+    const tokenExpiry = new Date();
+    tokenExpiry.setMinutes(tokenExpiry.getMinutes() + process.env.TEMP_TOKEN_EXPIRY);
+    return {unHashedToken, hashedToken, tokenExpiry};
 }
 
 export const UserModel = mongoose.model('User', userSchema);

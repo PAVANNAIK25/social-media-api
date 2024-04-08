@@ -8,7 +8,7 @@ likesRouter.get('/toggle/:typeId', (req, res, next)=>{
     likeController.toggleLike(req, res, next)
 });
 
-likesRouter.get('/:typeId/:customId', (req, res, next)=>{
+likesRouter.get('/:typeId/', (req, res, next)=>{
     likeController.getLikes(req, res, next)
 });
 

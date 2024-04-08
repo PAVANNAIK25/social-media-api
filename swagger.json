@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://social-media-api-1caq.onrender.com/api"
+            "url": "http://localhost:8000/api"
         }
     ],
     "components": {
@@ -514,6 +514,159 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/users/forgot-password": {
+            "post": {
+                "tags": [
+                    "Users Authentication"
+                ],
+                "summary": "Forgot password request",
+                "description": "The API endpoint allows you to send a forgot password email by providing the user's email ID. \n\n When accessing this endpoint and providing the email ID as a parameter, the API initiates the process of sending a password reset email to the specified email address. \n\n This functionality is useful for implementing password recovery mechanisms within your application, allowing users to reset their passwords securely.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Forgot password request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {}
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404":{
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/users/reset-password/{token}": {
+            "post": {
+                "tags": [
+                    "Users Authentication"
+                ],
+                "summary": "Reset forgotten request",
+                "description": "The API endpoint enables users to reset their password through the password reset email. \n\n By providing the new password and the password reset token obtained from the URL, users can securely reset their password and regain access to their account. \n\n This functionality ensures a secure and streamlined password reset process, allowing users to update their password conveniently and protect their account from unauthorized access.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "token",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "newPassword": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reset forgotten request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {}
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404":{
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                     },
                     "400": {
                         "description": "Bad Request"
@@ -1130,8 +1283,8 @@
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Add comment",
+                    "200": {
+                        "description": "retrieve comments",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1361,7 +1514,192 @@
                     }
                 }
             }
+        },
+        "/likes/toggle/{typeId}": {
+            "get": {
+                "tags": [
+                    "Likes"
+                ],
+                "summary": "Like or Unlike post or comment",
+                "description": "The API endpoint allows users to like or unlike post or comment, based on the postID or commentId provided as a path variable. \n\n When accessing this endpoint and specifying a valid typeId and type in query parameter, the response will contain a liked or unliked status related to that particular post or comment.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "typeId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Like or unlike post or comment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "isLiked": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Post or comment not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/likes/{typeId}": {
+            "get": {
+                "tags": [
+                    "Likes"
+                ],
+                "summary": "Get the likes on a post or comment",
+                "description": "The API endpoint allows users to retrieve a list of likes associated with a specific post, based on the postID or commentId provided as a path variable. \n\n When accessing this endpoint and specifying a valid postID and commentId, the response will contain a number of likes related to that particular post or comment.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "typeId",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "number"
+                        },
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "get likes on post or comment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "LikesCount": {
+                                                    "type": "number"
+                                                },
+                                                "likes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "_id": {
+                                                                "type": "string"
+                                                            },
+                                                            "user": {
+                                                                "type": "string"
+                                                            },
+                                                            "createdAt": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "likes not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
         }
-
     }
 }

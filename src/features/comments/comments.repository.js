@@ -32,12 +32,8 @@ const commonCommentAggregation = () => {
                     $addFields: {
                         account: { $first: "$account" }
                     }
-
-                }
-                ]
-
+                }]
             }
-
         },
 
         {

@@ -32,9 +32,7 @@ const commonPostAggregater = () => {
                         account: { $first: "$account" }
                     }
 
-                }
-                ]
-
+                }]
             }
 
         },

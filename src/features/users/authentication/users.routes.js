@@ -16,6 +16,16 @@ userRouter.post("/signin", (req, res, next)=>{
     userController.signIn(req, res, next);
 })
 
+userRouter.post("/forgot-password", (req, res, next)=>{
+    userController.forgotPassword(req, res, next);
+})
+
+userRouter.post("/reset-password/:token", (req, res, next)=>{
+    userController.resetPassword(req, res, next);
+})
+
+//secure routes
+
 userRouter.get("/logout", auth, (req, res, next)=>{
     userController.logout(req, res, next);
 })

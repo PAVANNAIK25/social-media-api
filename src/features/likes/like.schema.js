@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export const likeSchema = mongoose.Schema({
+const likeSchema = mongoose.Schema({
     likeable:{
         type: mongoose.Schema.Types.ObjectId,
         refPath: 'model'
@@ -13,4 +13,6 @@ export const likeSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:'User'
     }
-})
+}, {timestamps: true})
+
+export const LikeModel = mongoose.model('Like', likeSchema);
