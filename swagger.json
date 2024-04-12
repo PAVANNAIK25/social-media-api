@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://social-media-api-1caq.onrender.com/api"
+            "url": "http://localhost:8000/api"
         }
     ],
     "components": {
@@ -39,90 +39,48 @@
             "userProfile": {
                 "type": "object",
                 "properties": {
-                    "statusCode": {
-                        "type": "number"
+                    "id": {
+                        "type": "string"
                     },
-                    "data": {
+                    "coverImage": {
                         "type": "object",
                         "properties": {
-                            "id": {
+                            "_id": {
                                 "type": "string"
                             },
-                            "coverImage": {
-                                "type": "object",
-                                "properties": {
-                                    "_id": {
-                                        "type": "string"
-                                    },
-                                    "localPath": {
-                                        "type": "string"
-                                    },
-                                    "url": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "firstName": {
+                            "localPath": {
                                 "type": "string"
                             },
-                            "lastName": {
+                            "url": {
                                 "type": "string"
-                            },
-                            "dob": {
-                                "type": "string"
-                            },
-                            "location": {
-                                "type": "string"
-                            },
-                            "bio": {
-                                "type": "string"
-                            },
-                            "phoneNumber": {
-                                "type": "number"
-                            },
-                            "owner": {
-                                "type": "string"
-                            },
-                            "account": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "gender": {
-                                        "type": "string"
-                                    },
-                                    "role": {
-                                        "type": "string"
-                                    }
-                                }
                             }
                         }
                     },
-                    "message": {
+                    "firstName": {
                         "type": "string"
-                    }
-                }
-            },
-            "responseUser": {
-                "type": "object",
-                "properties": {
-                    "data": {
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "dob": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "phoneNumber": {
+                        "type": "number"
+                    },
+                    "owner": {
+                        "type": "string"
+                    },
+                    "account": {
                         "type": "object",
                         "properties": {
-                            "statusCode": {
-                                "type": "number"
-                            },
-                            "id": {
-                                "type": "string"
-                            },
                             "name": {
-                                "type": "string"
-                            },
-                            "role": {
                                 "type": "string"
                             },
                             "email": {
@@ -130,12 +88,33 @@
                             },
                             "gender": {
                                 "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
                             }
                         }
+                    }
+                }
+            },
+            "responseUser": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
                     },
-                    "message": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string"
+                    },
+                    "gender": {
                         "type": "string"
                     }
+                    
                 }
             },
             "responsePost": {
@@ -149,12 +128,14 @@
                     },
                     "tags": {
                         "type": "array",
+                        "maxItems": 3,
                         "items": {
                             "type": "string"
                         }
                     },
                     "images": {
                         "type": "array",
+                        "maxItems": 6,
                         "items": {
                             "type": "object",
                             "properties": {
@@ -337,6 +318,11 @@
             }
         }
     },
+    "security": [
+        {
+            "cookieAuth":[]
+        }
+    ],
     "paths": {
         "/users/signup": {
             "post": {
@@ -360,6 +346,12 @@
                                     },
                                     "password": {
                                         "type": "string"
+                                    },
+                                    "gender":{
+                                        "type": "string"
+                                    },
+                                    "role":{
+                                        "type": "string"
                                     }
                                 }
                             }
@@ -372,7 +364,19 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/responseUser"
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode":{
+                                            "type": "number"
+                                        },
+                                        "data":{
+                                            "$ref": "#/components/schemas/responseUser"
+                                        },
+                                        "message":{
+                                            "type": "string"
+                                        }
+                                    }
+                                    
                                 }
                             }
                         }
@@ -566,7 +570,7 @@
                             }
                         }
                     },
-                    "404":{
+                    "404": {
                         "description": "User not found",
                         "content": {
                             "application/json": {
@@ -586,7 +590,6 @@
                                 }
                             }
                         }
-
                     },
                     "400": {
                         "description": "Bad Request"
@@ -605,7 +608,10 @@
                     {
                         "in": "path",
                         "name": "token",
-                        "required": true
+                        "required": true,
+                        "schema":{
+                            "type": "string"
+                        }
                     }
                 ],
                 "requestBody": {
@@ -646,7 +652,7 @@
                             }
                         }
                     },
-                    "404":{
+                    "404": {
                         "description": "User not found",
                         "content": {
                             "application/json": {
@@ -666,7 +672,6 @@
                                 }
                             }
                         }
-
                     },
                     "400": {
                         "description": "Bad Request"
@@ -687,7 +692,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/userProfile"
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/userProfile"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -721,7 +737,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/userProfile"
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/userProfile"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -778,7 +805,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/userProfile"
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/userProfile"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -819,7 +857,18 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/userProfile"
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/userProfile"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1020,6 +1069,7 @@
                 "tags": [
                     "Posts"
                 ],
+                "security": [],
                 "summary": "Get post by postId",
                 "description": "The API endpoint allows users to fetch a post by providing the post ID as a path variable.\n\n By accessing this endpoint and providing a valid post ID, users will receive a response containing the details of the post corresponding to the provided ID.",
                 "parameters": [
@@ -1184,6 +1234,7 @@
                 "tags": [
                     "Comments"
                 ],
+                "security": [],
                 "summary": "Add comment",
                 "description": "The API endpoint allows users to add a comment to a specific post based on the postId provided in the path variable. \n\n When accessing this endpoint and providing a valid postId as a parameter, users can submit their comments to be associated with that particular post.",
                 "parameters": [
@@ -1262,6 +1313,7 @@
                 "tags": [
                     "Comments"
                 ],
+                "security": [],
                 "summary": "Get posts comments",
                 "description": "The API endpoint allows users to retrieve a list of comments associated with a specific post, based on the post ID provided as a path variable. \n\n When accessing this endpoint and specifying a valid post ID, the response will contain a collection of comments related to that particular post.",
                 "parameters": [
@@ -1284,7 +1336,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "retrieve comments",
+                        "description": "get all comments on a post",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1352,6 +1404,7 @@
                 ],
                 "summary": "Update comment",
                 "description": "The API endpoint allows users to update a comment associated with a post based on the comment ID provided in the path variable.\n \n By accessing this endpoint and specifying the comment ID, users can modify the content or other attributes of the comment associated with the post.",
+                "security": [],
                 "parameters": [
                     {
                         "in": "path",
@@ -1676,6 +1729,280 @@
                     },
                     "404": {
                         "description": "likes not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/follow/{toBeFollowedId}": {
+            "post": {
+                "tags": [
+                    "Follow"
+                ],
+                "summary": "Follow or unfollow user",
+                "description": "The API endpoint allows users to follow or unfollow other users within the application. \n\n When accessing this endpoint, users can choose to follow or unfollow a specific user, thereby establishing or severing a connection between their accounts.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "toBeFollowedId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Follow or unfollow user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "following": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/follow/followers/{user}": {
+            "get": {
+                "tags": [
+                    "Follow"
+                ],
+                "summary": "Get users followers",
+                "description": "The API endpoint allows you to retrieve the list of followers for a specific user based on their userId passed as a path variable. \n\n When accessing this endpoint, you will receive a response containing the followers' information for the specified user.",
+                "security": [
+                    {"cookieAuth":[]}
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "user",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "number"
+                        },
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "get users followers list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "followerCount": {
+                                                    "type": "number"
+                                                },
+                                                "user":{
+                                                    "$ref": "#/components/schemas/userProfile"
+                                                },
+                                                "followers":{
+                                                    "type": "array",
+                                                    "items":{
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id":{
+                                                                "type":"string"
+                                                            },
+                                                            "profile":{
+                                                                "$ref": "#/components/schemas/userProfile"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/follow/following/{user}": {
+            "get": {
+                "tags": [
+                    "Follow"
+                ],
+                "summary": "Get user following",
+                "description": "The API endpoint allows you to retrieve the list of following for a specific user based on their userId passed as a path variable. \n\n When accessing this endpoint, you will receive a response containing the followers' information for the specified user.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "user",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "number"
+                        },
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "get users followers list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "statusCode": {
+                                            "type": "number"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "page": {
+                                                    "type": "string"
+                                                },
+                                                "followerCount": {
+                                                    "type": "number"
+                                                },
+                                                "user":{
+                                                    "$ref": "#/components/schemas/userProfile"
+                                                },
+                                                "following":{
+                                                    "type": "array",
+                                                    "items":{
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id":{
+                                                                "type":"string"
+                                                            },
+                                                            "profile":{
+                                                                "$ref": "#/components/schemas/userProfile"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            
+                                            }
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
                         "content": {
                             "application/json": {
                                 "schema": {

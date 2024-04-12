@@ -10,5 +10,8 @@ followRouter.post("/:toBeFollowedId", (req, res, next)=>{
 followRouter.get("/followers/:user", (req, res, next)=>{
     followController.followerList(req, res, next)
 });
+followRouter.get("/following/:user", (req, res, next)=>{
+    followController.followingList(req, res, next)
+});
 
 

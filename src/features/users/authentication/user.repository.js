@@ -5,10 +5,12 @@ import crypto from 'crypto';
 
 
 export default class UserRepository {
+    
     //this method will allow users to sign up
-
     async signUp(userData) {
-        userData.role = userData.role.toUpperCase();
+        if(userData.role){
+            userData.role = userData.role.toUpperCase();
+        }
         const newUser = new UserModel(userData);
         await newUser.save();
         return await UserModel.findById(newUser._id).select('name email role gender');

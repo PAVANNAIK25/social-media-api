@@ -1,5 +1,5 @@
 import ApplicationError from "../../utils/error handle/applicationError.js";
-import { UserModel } from "../users/authentication/user.schema.js";
+import { ProfileModel } from "../users/profile/profile.schema.js";
 import { followModel } from "./follow.schema.js";
 import mongoose from 'mongoose';
 
@@ -34,8 +34,6 @@ export default class FollowRepository {
             };
 
         } else {
-
-
             const follow = await followModel.create({
                 followerId: new mongoose.Types.ObjectId(userId),
                 followeeId: new mongoose.Types.ObjectId(toBeFollowedId)
@@ -48,43 +46,30 @@ export default class FollowRepository {
     }
 
     async followersList(page, userId) {
-        let perPage = 5;
-
-        const userAggregation = await UserModel.aggregate([
+        let perPage = 10;
+        const userAggregation = await ProfileModel.aggregate([
+            {
+                $match: {
+                    owner: new mongoose.Types.ObjectId(userId),
+                }
+            },
             {
                 $lookup: {
-                    from: "profiles",
-                    localField: "_id",
-                    foreignField: "owner",
-                    as: "User",
+                    from: 'users',
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "account",
                     pipeline: [
                         {
                             $project: {
-                                firstName: 1,
-                    lastName: 1,
-                    dob: 1,
-                    coverImage: 1,
-                    bio: 1,
-                    location: 1,
-                    phoneNumber: 1
-                            },
-
-                        },
-
-                    ],
+                                name: 1,
+                                email: 1,
+                                gender: 1,
+                                role: 1
+                            }
+                        }
+                    ]
                 },
-            },
-            {
-                $project: {
-                    firstName: 1,
-                    lastName: 1,
-                    dob: 1,
-                    coverImage: 1,
-                    bio: 1,
-                    location: 1,
-                    phoneNumber: 1
-
-                }
             }
 
         ]);
@@ -94,7 +79,7 @@ export default class FollowRepository {
             throw new ApplicationError("User does not exist", 404);
         }
 
-        const followerAggregation = await followModel.aggregate([
+        const followers = await followModel.aggregate([
             {
                 $match: { followeeId: new mongoose.Types.ObjectId(userId) }
             },
@@ -104,38 +89,165 @@ export default class FollowRepository {
             {
                 $limit: perPage
             },
+
             {
                 $lookup: {
                     from: "profiles",
                     localField: "followerId",
                     foreignField: "owner",
-                    as: "followers",
-                    pipeline: [{
-                        $lookup: {
-                            from: 'users',
-                            localField: 'owner',
-                            foreignField: '_id',
-                            as: "account",
-                            pipeline: [{
-                                $project: {
-                                    name: 1,
-                                    email: 1,
-                                    gender: 1,
-                                    role: 1
-                                },
-                            }]
+                    as: "follower",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "account",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            name: 1,
+                                            email: 1,
+                                            gender: 1,
+                                            role: 1,
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                        {
+                            $addFields: {
+                                account: {
+                                    $first: "$account"
+                                }
+                            }
                         }
+                    ],
+                },
+            },
+            {
+                $addFields: {
+                    profile: {
+                        $first: "$follower"
                     }
-                    ]
+                }
+            },
+            {
+                $project: {
+                    profile: 1
                 }
             }
-
-
         ]);
-
+        const followersCount = await followModel.countDocuments({ followeeId: new mongoose.Types.ObjectId(userId) });
         return {
             user,
-            followerAggregation
+            followers,
+            followersCount
+        };
+
+    }
+
+    async followingList(page, userId) {
+        let perPage = 10;
+
+        const userAggregation = await ProfileModel.aggregate([
+            {
+                $match: {
+                    owner: new mongoose.Types.ObjectId(userId),
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "account",
+                    pipeline: [
+                        {
+                            $project: {
+                                name: 1,
+                                email: 1,
+                                gender: 1,
+                                role: 1
+                            }
+                        }
+                    ]
+                },
+            }
+
+        ]);
+        const user = userAggregation[0];
+
+        if (!user) {
+            throw new ApplicationError("User does not exist", 404);
+        }
+
+        const following = await followModel.aggregate([
+            {
+                $match: { followerId: new mongoose.Types.ObjectId(userId) }
+            },
+            {
+                $skip: (page - 1) * perPage
+            },
+            {
+                $limit: perPage
+            },
+
+            {
+                $lookup: {
+                    from: "profiles",
+                    localField: "followeeId",
+                    foreignField: "owner",
+                    as: "followee",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "account",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            name: 1,
+                                            email: 1,
+                                            gender: 1,
+                                            role: 1,
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                        {
+                            $addFields: {
+                                account: {
+                                    $first: "$account",
+                                },
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $addFields: {
+                    profile: {
+                        $first: "$followee"
+                    },
+                },
+            },
+            {
+                $project: {
+                    profile: 1,
+                    _id:0
+                },
+            }
+        ]);
+
+        const followingCount = await followModel.countDocuments({ followerId: new mongoose.Types.ObjectId(userId) });
+        return {
+            user,
+            following,
+            followingCount
         };
 
     }
